@@ -1,30 +1,23 @@
+from collections import OrderedDict
 import sys
 
-def report(line, filenames, line_nums, counts, rep_num):
+def report(line, reports):
     filename, line_num = line.split()
-    filename = filename[-16:].split('\\')[-1]
-    
-    for i, f in enumerate(filenames):
-        if filename == f and line_num == line_nums[i]:
-            counts[i] += 1
-            rep_num += [i]
-            return
-    
-    filenames += [filename]
-    line_nums += [line_num]
-    counts += [1]
-    rep_num += [len(filenames) - 1]
+    filename = filename.split('\\')[-1]
+    key = (filename, line_num)
+    reports[key] = reports.get(key, 0) + 1
 
 
-def print_reports(filenames, line_nums, counts, rep_num):
-    m = 0 if len(rep_num) < 8 else len(rep_num) - 8
-    while m < len(rep_num):
-        print '{} {} {}'.format(filenames[rep_num[m]], line_nums[rep_num[m]], counts[rep_num[m]])
-        m += 1
+def print_reports(reports):
+    m = 0 if len(reports) < 8 else len(reports) - 8
+    for k, v in reports.items()[m:]:
+        filename, line_num = k
+        filename = filename if len(filename) <= 16 else filename[-16:]
+        print '{} {} {}'.format(filename, line_num, v)
 
 
-filenames, line_nums, counts, rep_nums = [], [], [], []
+reports = OrderedDict()
 for line in sys.stdin.readlines():
-    report(line, filenames, line_nums, counts, rep_nums)
-    print filenames, line_nums, counts, rep_nums
-print_reports(filenames, line_nums, counts, rep_nums)
+    report(line, reports)
+    print reports
+print_reports(reports)
